@@ -1,7 +1,7 @@
 var Discord = require('discord.js');
 var bot = new Discord.Client();
 var media = "media/john_cena.ogg";
-
+var credentials = require('./credentials.json');
 
 bot.on("ready", function() {
     console.log("Logged in as: " + bot.user.username + " - (" + bot.user.id + ")");
@@ -56,4 +56,4 @@ process.on("SIGINT", function () {
   
 });
 
-bot.login("discordwwe@gmail.com", "discordwwe2016");
+bot.login(credentials.email, credentials.password);
