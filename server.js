@@ -10,25 +10,23 @@ bot.on("ready", function() {
 	bot.setPlayingGame("WWE SMACKDOWN RAW 2016");
 	
 	bot.on("voiceJoin", function(vch, User){
-		if(vch == null || User.username == "JOHN CENA")
+		if(vch == null || 
+		   User.username == "JOHN CENA" ||  
+		   User.username == "AIRHORN SOLUTIONS")
 			return;
-		
+			
 		console.log(User.username + ' joined!!');
 		
 		bot.joinVoiceChannel(vch, function(err, voiceConnection){
 			console.log("Errors: " + err);
 			console.log("Joined channel" + voiceConnection.server.name);
-			voiceConnection.playFile(media, { volume: 0.5 }, function (error, streamIntent) {
+			voiceConnection.playFile(media, { volume: 0.1 }, function (error, streamIntent) {
 				streamIntent.on("error", function (error) {
 					console.log("error " + error);
 				});
 
-				streamIntent.on("time", function (time) {
-					console.log("time " + time);
-				});
-
 				streamIntent.on("end", function () {
-					console.log("end");
+					bot.leaveVoiceChannel(vch);
 				});
 			});
 		});
@@ -53,9 +51,11 @@ if (process.platform === "win32") {
 
 process.on("SIGINT", function () {
   //graceful shutdown
-  console.log('Logging out...');
-  bot.logout();
-  process.exit();
+  bot.logout(function(err){
+	console.log('Logging out...' + err);
+	process.exit();
+  });
+  
 });
 
 bot.login("discordwwe@gmail.com", "discordwwe2016");
