@@ -1,5 +1,3 @@
-#!/bin/env node
-
 var Discord = require('discord.js');
 var bot = new Discord.Client();
 var media = "media/john_cena.ogg";
