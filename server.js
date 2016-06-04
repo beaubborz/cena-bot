@@ -2,35 +2,42 @@
 
 var Discord = require('discord.js');
 var bot = new Discord.Client();
-var voiceChannel = null;
-var media = 'C:\\Users\\gab\\Documents\\My Projects\\dischordwwe\\media\\john_cena.ogg';
+var media = "media/john_cena.ogg";
 
 
-bot.on("ready", function(event) {
+bot.on("ready", function() {
     console.log("Logged in as: " + bot.user.username + " - (" + bot.user.id + ")");
-	bot.setPlayingGame("WWE SMACKDOWN RAW 2016", function(error){
-	});
+	bot.setPlayingGame("WWE SMACKDOWN RAW 2016");
+	
+	bot.on("voiceJoin", function(vch, User){
+		if(vch == null || User.username == "JOHN CENA")
+			return;
+		
+		console.log(User.username + ' joined!!');
+		
+		bot.joinVoiceChannel(vch, function(err, voiceConnection){
+			console.log("Errors: " + err);
+			console.log("Joined channel" + voiceConnection.server.name);
+			voiceConnection.playFile(media, { volume: 0.5 }, function (error, streamIntent) {
+				streamIntent.on("error", function (error) {
+					console.log("error " + error);
+				});
 
-	voiceChannel = bot.channels.find(function(ch){
-		return (ch.type == 'voice');
+				streamIntent.on("time", function (time) {
+					console.log("time " + time);
+				});
+
+				streamIntent.on("end", function () {
+					console.log("end");
+				});
+			});
+		});
 	});
-    console.log("Found channel: " + voiceChannel.name);
 });
 
-bot.on("voiceJoin", function(VoiceChannel, User){
-	if(VoiceChannel == null || User.username == "JOHN CENA")
-		return;
-	
-	console.log(User.username + ' joined!!');
-	
-	bot.joinVoiceChannel(VoiceChannel, function(err, voice){
-		console.log("Joined voice channel " + voiceChannel.name);
-		voice.playFile(media,{volume:1},function(err){
-			console.log("Playing file " + media + " on channel "+voice.server.name);
-			console.log(err);
-			});
-	});
-	
+
+bot.on("error", function(err){
+	console.log("FATAL ERROR!: " + err);
 });
 
 if (process.platform === "win32") {
