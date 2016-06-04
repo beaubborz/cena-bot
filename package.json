@@ -1,35 +1,24 @@
 {
-  "name": "OpenShift-Sample-App",
-  "version": "1.0.0",
-  "description": "OpenShift Sample Application",
+  "name": "Discord-WWE",
+  "version": "0.0.1",
+  "description": "Discord WWE theme song login bot",
   "keywords": [
     "OpenShift",
     "Node.js",
-    "application",
+    "discord",
     "openshift"
   ],
   "author": {
-    "name": "OpenShift",
-    "email": "ramr@example.org",
-    "url": "http://www.openshift.com/"
+    "name": "beaubbe",
   },
-  "homepage": "http://www.openshift.com/",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/openshift/origin-server"
-  },
-
   "engines": {
     "node": ">= 0.6.0",
     "npm": ">= 1.0.0"
   },
-
   "dependencies": {
-    "express": "~3.4.4"
   },
   "devDependencies": {},
   "bundleDependencies": [],
-
   "private": true,
   "main": "server.js"
 }
