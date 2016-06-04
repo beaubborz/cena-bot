@@ -16,7 +16,7 @@
     "npm": ">= 1.0.0"
   },
   "dependencies": {
-    "dischord.js": ">= 7.0.1",
+    "discord.js": ">= 7.0.1",
     "discord.js": "^7.0.1"
   },
   "devDependencies": {},
