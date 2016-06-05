@@ -152,6 +152,10 @@ bot.on('error', (err) => {
 
 app.use('/', express.static(path.join(__dirname, '/public')));
 
+app.get('/ping', (req, res) => {
+  res.send({status: 'ok'});
+});
+
 const SERVER_PORT = process.env.PORT || 4000;
 app.listen(SERVER_PORT, () => {
   console.log(`cena-bot-web running on ${SERVER_PORT}`);
