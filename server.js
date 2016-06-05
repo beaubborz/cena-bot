@@ -57,7 +57,6 @@ bot.on('message', function(msg) {
   // Process commands.
   var trigger = msg.content.toLowerCase().substring(0, johnTrigger.length);
   var args = msg.content.toLowerCase().substring(johnTrigger.length + 1).split(/[\s,\\.!]+/g);
-  console.log(args);
   if(trigger == johnTrigger)
   {
       if(args.containsAll(['reset', 'song']))
