@@ -12,5 +12,5 @@ npm start
 
 # Useful stuff
 
-https://discordapp.com/developers/docs/topics/oauth2
-https://github.com/hydrabolt/discord.js/
+- https://discordapp.com/developers/docs/topics/oauth2
+- https://github.com/hydrabolt/discord.js/
