@@ -19,7 +19,6 @@ const playFileInChannel = (filepath, v = 1.0) => {
     console.log('Error! voiceChannel is null.');
     return;
   }
-
   console.log(filepath);
   bot.joinVoiceChannel(voiceChannel, (err, voiceConnection) => {
     if (err) {
@@ -38,6 +37,14 @@ const playFileInChannel = (filepath, v = 1.0) => {
   });
 };
 
+const resetThemeSong = (userId) => {
+  fs.readdirSync(THEME_SONGS_PATH).forEach((filename) => {
+    if (filename.includes(userId)) {
+      fs.unlinkSync(THEME_SONGS_PATH + filename);
+    }
+  });
+};
+
 const uploadThemeSong = (msg) => {
   if (msg.content.toUpperCase() !== 'THEME SONG' || !msg.attachments) {
     return;
@@ -51,7 +58,7 @@ const uploadThemeSong = (msg) => {
     return;
   }
   console.log(`Theme song request from ${msg.author.username} for ${msg.attachments[0].url}`);
-
+  resetThemeSong(msg.author.id);
   https.get(msg.attachments[0].url, (data) => {
     let fileToSave = `${THEME_SONGS_PATH}${msg.author.id}.${ext}`;
     let file = fs.createWriteStream(fileToSave);
@@ -62,14 +69,6 @@ const uploadThemeSong = (msg) => {
       bot.reply(msg, 'Damn, that\'s a fine theme song!');
       playFileInChannel(fileToSave);
     });
-  });
-};
-
-const resetThemeSong = (userId) => {
-  fs.readdirSync(THEME_SONGS_PATH).forEach((filename) => {
-    if (filename.includes(userId)) {
-      fs.unlinkSync(THEME_SONGS_PATH + filename);
-    }
   });
 };
 
@@ -134,7 +133,7 @@ bot.on('message', (msg) => {
 
   // Process commands.
   let trigger = msg.content.toLowerCase().substring(0, JOHN_KEYWORD.length);
-  let args = msg.content.toLowerCase().substring(JOHN_KEYWORD.length + 1).split(/[\s,\\.!]+/g);
+  let args = msg.content.toLowerCase().substring(JOHN_KEYWORD.length + 1).split(/[\s,\\.!\\?]+/g);
   if (trigger === JOHN_KEYWORD) {
     if (args.containsAll(['reset', 'song'])) {
       resetThemeSong(msg.author.id);
