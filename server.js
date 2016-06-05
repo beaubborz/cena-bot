@@ -1,9 +1,11 @@
-const Discord = require('discord.js');
 const https = require('https');
 const fs = require('fs');
+const path = require('path');
+const Discord = require('discord.js');
 const express = require('express');
 const app = express();
 const bot = new Discord.Client();
+
 
 const THEME_SONGS_PATH = './theme_songs/';
 const MEDIA = 'media/hello.ogg';
@@ -12,87 +14,19 @@ const JOHN_KEYWORD = 'john!';
 
 let voiceChannel;
 
-bot.on("ready", () => {
-  console.log(`Logged in as: ${bot.user.username} - (${bot.user.id})`);
-	bot.setPlayingGame('WWE SMACKDOWN RAW 2016');
-
-  voiceChannel = bot.channels.find((ch) => {
-    return ch.type == 'voice' && ch.name == 'General';
-  });
-  console.log(`Found voice channel: ${voiceChannel.name}`);
-});
-
-bot.on("voiceJoin", (vch, User) => {
-  if(vch == null) return;
-  if(User.username == bot.user.username) return;
-
-  console.log(`${User.username} joined!!`);
-
-  let user_theme_song = fs.readdirSync(THEME_SONGS_PATH).find((filename) => {
-    return filename.includes(User.id);
-  });
-
-  if(user_theme_song)
-    PlayFileInChannel(`${THEME_SONGS_PATH}${user_theme_song}`);
-  else
-    PlayFileInChannel(MEDIA, 0.2);
-});
-
-
-bot.on("voiceLeave", (vch, User) => {
-  if(!vch) return;
-  if(User.username == bot.user.username) return;
-
-  console.log(`${User.username} joined!!`);
-  PlayFileInChannel(MEDIA_BYE);
-});
-
-
-bot.on('message', (msg) => {
-  if(msg.attachments.length) {
-    uploadThemeSong(msg);
-    return;
-  }
-
-  // Process commands.
-  let trigger = msg.content.toLowerCase().substring(0, JOHN_KEYWORD.length);
-  let args = msg.content.toLowerCase().substring(JOHN_KEYWORD.length + 1).split(/[\s,\\.!]+/g);
-  if(trigger == JOHN_KEYWORD) {
-    if(args.containsAll(['reset', 'song'])) {
-      resetThemeSong(msg.author.id);
-      bot.reply(msg, `Damn straight! My theme song is way better!`);
-      PlayFileInChannel(MEDIA, v = 0.2);
-    }
-    else
-      bot.reply(msg, "WHAT??!");
-  }
-});
-
-bot.on("error", (err) => {
-	console.log(`FATAL ERROR!: ${err}`);
-});
-
-app.use('/', express.static(__dirname + '/public'));
-
-const server_port = process.env.PORT || 4000;
-app.listen(server_port, () => {
-  console.log(`cena-bot-web running on ${server_port}`);
-  bot.loginWithToken(
-    process.env.DISCORD_CLIENT_SECRET
-  );
-});
-
-const PlayFileInChannel = (filepath, v = 1.0) => {
-  if(!voiceChannel) {
-    console.log("Error! voiceChannel is null.");
+const playFileInChannel = (filepath, v = 1.0) => {
+  if (!voiceChannel) {
+    console.log('Error! voiceChannel is null.');
     return;
   }
 
   console.log(filepath);
   bot.joinVoiceChannel(voiceChannel, (err, voiceConnection) => {
-    if(err) console.log(`Errors: ${err}`);
+    if (err) {
+      console.log(`Errors: ${err}`);
+    }
     console.log(`Joined channel ${voiceConnection.server.name}`);
-    voiceConnection.playFile(filepath, { volume: v}, (error, streamIntent) => {
+    voiceConnection.playFile(filepath, {volume: v}, (error, streamIntent) => {
       streamIntent.on('error', (error) => {
         console.log(`error: ${error}`);
       });
@@ -102,17 +36,19 @@ const PlayFileInChannel = (filepath, v = 1.0) => {
       });
     });
   });
-}
+};
 
 const uploadThemeSong = (msg) => {
-  if(msg.content.toUpperCase() != 'THEME SONG' || !msg.attachments) return;
+  if (msg.content.toUpperCase() !== 'THEME SONG' || !msg.attachments) {
+    return;
+  }
 
   let url = msg.attachments[0].url;
   let ext = url.substring(url.lastIndexOf('.') + 1);
 
-  if(!['mp3', 'wav', 'ogg'].includes(ext.toLowerCase())) {
-     bot.reply(msg, `I can't play ${ext} files, bro!`);
-     return;
+  if (!['mp3', 'wav', 'ogg'].includes(ext.toLowerCase())) {
+    bot.reply(msg, `I can't play ${ext} files, bro!`);
+    return;
   }
   console.log(`Theme song request from ${msg.author.username} for ${msg.attachments[0].url}`);
 
@@ -124,24 +60,103 @@ const uploadThemeSong = (msg) => {
     file.on('finish', () => {
       file.close();
       bot.reply(msg, 'Damn, that\'s a fine theme song!');
-      PlayFileInChannel(fileToSave);
+      playFileInChannel(fileToSave);
     });
   });
-}
+};
 
 const resetThemeSong = (userId) => {
   fs.readdirSync(THEME_SONGS_PATH).forEach((filename) => {
-    if(filename.includes(userId))
-      fs.unlinkSync(THEME_SONGS_PATH+filename);
+    if (filename.includes(userId)) {
+      fs.unlinkSync(THEME_SONGS_PATH + filename);
+    }
   });
-}
+};
 
-Array.prototype.intersects = function(arr) {
+Array.prototype.intersects = function (arr) {
   return this.filter((n) => {
     return arr.indexOf(n) > -1;
   });
-}
+};
 
-Array.prototype.containsAll = function(arr) {
-  return this.intersects(arr).length == arr.length;
-}
+Array.prototype.containsAll = function (arr) {
+  return this.intersects(arr).length === arr.length;
+};
+
+bot.on('ready', () => {
+  console.log(`Logged in as: ${bot.user.username} - (${bot.user.id})`);
+  bot.setPlayingGame('WWE SMACKDOWN RAW 2016');
+
+  voiceChannel = bot.channels.find((ch) => {
+    return ch.type === 'voice' && ch.name === 'General';
+  });
+  console.log(`Found voice channel: ${voiceChannel.name}`);
+});
+
+bot.on('voiceJoin', (vch, User) => {
+  if (vch === null) {
+    return;
+  }
+  if (User.username === bot.user.username) {
+    return;
+  }
+
+  console.log(`${User.username} joined!!`);
+
+  let userThemeSong = fs.readdirSync(THEME_SONGS_PATH).find((filename) => {
+    return filename.includes(User.id);
+  });
+
+  if (userThemeSong) {
+    playFileInChannel(`${THEME_SONGS_PATH}${userThemeSong}`);
+  } else {
+    playFileInChannel(MEDIA, 0.2);
+  }
+});
+
+bot.on('voiceLeave', (vch, User) => {
+  if (!vch) {
+    return;
+  }
+  if (User.username === bot.user.username) {
+    return;
+  }
+
+  console.log(`${User.username} joined!!`);
+  playFileInChannel(MEDIA_BYE);
+});
+
+bot.on('message', (msg) => {
+  if (msg.attachments.length) {
+    uploadThemeSong(msg);
+    return;
+  }
+
+  // Process commands.
+  let trigger = msg.content.toLowerCase().substring(0, JOHN_KEYWORD.length);
+  let args = msg.content.toLowerCase().substring(JOHN_KEYWORD.length + 1).split(/[\s,\\.!]+/g);
+  if (trigger === JOHN_KEYWORD) {
+    if (args.containsAll(['reset', 'song'])) {
+      resetThemeSong(msg.author.id);
+      bot.reply(msg, `Damn straight! My theme song is way better!`);
+      playFileInChannel(MEDIA, 0.2);
+    } else {
+      bot.reply(msg, 'WHAT??!');
+    }
+  }
+});
+
+bot.on('error', (err) => {
+  console.log(`FATAL ERROR!: ${err}`);
+});
+
+app.use('/', express.static(path.join(__dirname, '/public')));
+
+const SERVER_PORT = process.env.PORT || 4000;
+app.listen(SERVER_PORT, () => {
+  console.log(`cena-bot-web running on ${SERVER_PORT}`);
+
+  bot.loginWithToken(
+    process.env.DISCORD_CLIENT_SECRET
+  );
+});

@@ -16,8 +16,16 @@
     "discord.js": "^7.0.1",
     "express": "^4.13.4"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "xo": "^0.15.1"
+  },
   "bundleDependencies": [],
   "private": true,
-  "main": "server.js"
+  "main": "server.js",
+  "scripts": {
+    "test": "xo"
+  },
+  "xo": {
+    "space": true
+  }
 }
