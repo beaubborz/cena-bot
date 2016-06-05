@@ -8,6 +8,8 @@ var TSPath = './theme_songs/';
 var media = 'media/hello.ogg';
 var mediaBye = 'media/bye.mp3';
 
+var johnTrigger = 'john!';
+
 var voiceChannel;
 
 bot.on("ready", function() {
@@ -46,28 +48,27 @@ bot.on("voiceLeave", function(vch, User){
 
 
 bot.on('message', function(msg) {
-   if(msg.content.toUpperCase() != 'THEME SONG' ||
-      !msg.attachments)
-      return;
-   var url = msg.attachments[0].url;
-   var ext = url.substring(url.lastIndexOf('.') + 1);
-   if(!['mp3', 'wav', 'ogg'].includes(ext.toLowerCase()))
-   {
-      bot.reply(msg, `I can't play ${ext} files, bro!`);
-      return;
-   }
-   console.log(`Theme song request from ${msg.author.username} for ${msg.attachments[0].url}`);
+  if(msg.attachments.length)
+  {
+    uploadThemeSong(msg);
+    return;
+  }
 
-   https.get(msg.attachments[0].url, function(data) {
-      var fileToSave = `${TSPath}${msg.author.id}.${ext}`;
-      var file = fs.createWriteStream(fileToSave);
-      data.pipe(file);
-    file.on('finish', function() {
-      file.close();
-      bot.reply(msg, 'Damn, that\'s a fine theme song!');
-      PlayFileInChannel(fileToSave);
-    });
-   });
+  // Process commands.
+  console.log(msg.content.substring(0, johnTrigger.length));
+  var args = msg.content.toLowerCase().split(' ');
+  if(args[0] == johnTrigger)
+  {
+    console.log(args);
+      console.log(args.intersects(['reset', 'theme', 'song']));
+      if(args.containsAll(['reset', 'song']))
+      {
+        resetThemeSong(msg.author.id);
+        bot.reply(msg, `Damn straight! My theme song is way better!`);
+      }
+      else
+        bot.reply(msg, "WHAT??!");
+  }
 });
 
 bot.on("error", function(err){
@@ -104,4 +105,50 @@ var PlayFileInChannel = function(filepath, v = 1.0) {
       });
     });
   });
+}
+
+var uploadThemeSong = function(msg)
+{
+  if(msg.content.toUpperCase() != 'THEME SONG' ||
+     !msg.attachments)
+     return;
+  var url = msg.attachments[0].url;
+  var ext = url.substring(url.lastIndexOf('.') + 1);
+  if(!['mp3', 'wav', 'ogg'].includes(ext.toLowerCase()))
+  {
+     bot.reply(msg, `I can't play ${ext} files, bro!`);
+     return;
+  }
+  console.log(`Theme song request from ${msg.author.username} for ${msg.attachments[0].url}`);
+
+  https.get(msg.attachments[0].url, function(data) {
+     var fileToSave = `${TSPath}${msg.author.id}.${ext}`;
+     var file = fs.createWriteStream(fileToSave);
+     data.pipe(file);
+   file.on('finish', function() {
+     file.close();
+     bot.reply(msg, 'Damn, that\'s a fine theme song!');
+     PlayFileInChannel(fileToSave);
+   });
+  });
+}
+
+var resetThemeSong = function(userId)
+{
+  fs.readdirSync(TSPath).forEach(function(filename){
+    if(filename.includes(userId))
+     fs.unlinkSync(TSPath+filename);
+  });
+}
+
+Array.prototype.intersects = function(arr)
+{
+  return this.filter(function(n) {
+    return arr.indexOf(n) > -1;
+  });
+}
+
+Array.prototype.containsAll = function(arr)
+{
+  return this.intersects(arr).length == arr.length;
 }
