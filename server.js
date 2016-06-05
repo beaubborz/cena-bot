@@ -56,15 +56,13 @@ bot.on("error", function(err){
 	console.log("FATAL ERROR!: " + err);
 });
 
-bot.loginWithToken(
-  process.env.DISCORD_CLIENT_SECRET
-);
-
 var server_port = process.env.PORT || 4000;
 var server_host = process.env.HOST || '0.0.0.0';
 http.createServer().listen(
   server_port,
   server_host,
   () => {
-    console.log('Listening on port %d', server_port);
+    bot.loginWithToken(
+      process.env.DISCORD_CLIENT_SECRET
+    );
   });
