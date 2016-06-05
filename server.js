@@ -1,4 +1,5 @@
 var Discord = require('discord.js');
+var http = require("http");
 var bot = new Discord.Client();
 var media = "media/hello.ogg";
 var mediaBye = "media/bye.mp3";
@@ -55,14 +56,15 @@ bot.on("error", function(err){
 	console.log("FATAL ERROR!: " + err);
 });
 
-process.on("SIGINT", function () {
-  //graceful shutdown
-  bot.logout(function(err){
-  	console.log('Logging out...' + err);
-  	process.exit();
-  });
-});
-
 bot.loginWithToken(
   process.env.DISCORD_CLIENT_SECRET
 );
+
+var server_port = process.env.PORT || 4000;
+var server_host = process.env.HOST || '0.0.0.0';
+http.createServer().listen(
+  server_port,
+  server_host,
+  () => {
+    console.log('Listening on port %d', server_port);
+  });
