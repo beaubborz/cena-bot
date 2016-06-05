@@ -1,5 +1,8 @@
 var Discord = require('discord.js');
+var fs = require('fs');
 var http = require("http");
+var express = require('express');
+var app = express();
 var bot = new Discord.Client();
 var media = "media/hello.ogg";
 var mediaBye = "media/bye.mp3";
@@ -56,13 +59,12 @@ bot.on("error", function(err){
 	console.log("FATAL ERROR!: " + err);
 });
 
-var server_port = process.env.PORT || 4000;
-var server_host = process.env.HOST || '0.0.0.0';
-http.createServer().listen(
-  server_port,
-  server_host,
-  () => {
-    bot.loginWithToken(
-      process.env.DISCORD_CLIENT_SECRET
-    );
-  });
+app.use('/', express.static(__dirname + '/public'));
+
+const server_port = process.env.PORT || 4000;
+app.listen(server_port, function () {
+  console.log(`cena-bot-web running on ${server_port}`);
+  bot.loginWithToken(
+    process.env.DISCORD_CLIENT_SECRET
+  );
+});
