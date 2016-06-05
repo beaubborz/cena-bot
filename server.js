@@ -4,7 +4,6 @@ var media = "media/john_cena.ogg";
 var mediaBye = "media/bye.mp3";
 
 bot.on("ready", function() {
-  
   console.log("Logged in as: " + bot.user.username + " - (" + bot.user.id + ")");
 	bot.setPlayingGame("WWE SMACKDOWN RAW 2016");
 });
