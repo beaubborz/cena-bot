@@ -1,153 +1,147 @@
-var Discord = require('discord.js');
-var https = require('https');
-var fs = require('fs');
-var express = require('express');
-var app = express();
-var bot = new Discord.Client();
-var TSPath = './theme_songs/';
-var media = 'media/hello.ogg';
-var mediaBye = 'media/bye.mp3';
+const Discord = require('discord.js');
+const https = require('https');
+const fs = require('fs');
+const express = require('express');
+const app = express();
+const bot = new Discord.Client();
 
-var johnTrigger = 'john!';
+const THEME_SONGS_PATH = './theme_songs/';
+const MEDIA = 'media/hello.ogg';
+const MEDIA_BYE = 'media/bye.mp3';
+const JOHN_KEYWORD = 'john!';
 
-var voiceChannel;
+let voiceChannel;
 
-bot.on("ready", function() {
+bot.on("ready", () => {
   console.log(`Logged in as: ${bot.user.username} - (${bot.user.id})`);
 	bot.setPlayingGame('WWE SMACKDOWN RAW 2016');
 
-  voiceChannel = bot.channels.find(function(ch){
+  voiceChannel = bot.channels.find((ch) => {
     return ch.type == 'voice' && ch.name == 'General';
   });
   console.log(`Found voice channel: ${voiceChannel.name}`);
 });
 
-bot.on("voiceJoin", function(vch, User){
+bot.on("voiceJoin", (vch, User) => {
   if(vch == null) return;
   if(User.username == bot.user.username) return;
 
   console.log(`${User.username} joined!!`);
-  var user_theme_song = fs.readdirSync(TSPath).find(function(filename){
+
+  let user_theme_song = fs.readdirSync(THEME_SONGS_PATH).find((filename) => {
     return filename.includes(User.id);
   });
+
   if(user_theme_song)
-    PlayFileInChannel(`${TSPath}${user_theme_song}`);
+    PlayFileInChannel(`${THEME_SONGS_PATH}${user_theme_song}`);
   else
-    PlayFileInChannel(media, 0.2);
+    PlayFileInChannel(MEDIA, 0.2);
 });
 
 
-bot.on("voiceLeave", function(vch, User){
+bot.on("voiceLeave", (vch, User) => {
   if(!vch) return;
   if(User.username == bot.user.username) return;
 
   console.log(`${User.username} joined!!`);
-  PlayFileInChannel(mediaBye);
-
+  PlayFileInChannel(MEDIA_BYE);
 });
 
 
-bot.on('message', function(msg) {
-  if(msg.attachments.length)
-  {
+bot.on('message', (msg) => {
+  if(msg.attachments.length) {
     uploadThemeSong(msg);
     return;
   }
 
   // Process commands.
-  var trigger = msg.content.toLowerCase().substring(0, johnTrigger.length);
-  var args = msg.content.toLowerCase().substring(johnTrigger.length + 1).split(/[\s,\\.!]+/g);
-  if(trigger == johnTrigger)
-  {
-      if(args.containsAll(['reset', 'song']))
-      {
-        resetThemeSong(msg.author.id);
-        bot.reply(msg, `Damn straight! My theme song is way better!`);
-        PlayFileInChannel(media, v = 0.2);
-      }
-      else
-        bot.reply(msg, "WHAT??!");
+  let trigger = msg.content.toLowerCase().substring(0, JOHN_KEYWORD.length);
+  let args = msg.content.toLowerCase().substring(JOHN_KEYWORD.length + 1).split(/[\s,\\.!]+/g);
+  if(trigger == JOHN_KEYWORD) {
+    if(args.containsAll(['reset', 'song'])) {
+      resetThemeSong(msg.author.id);
+      bot.reply(msg, `Damn straight! My theme song is way better!`);
+      PlayFileInChannel(MEDIA, v = 0.2);
+    }
+    else
+      bot.reply(msg, "WHAT??!");
   }
 });
 
-bot.on("error", function(err){
+bot.on("error", (err) => {
 	console.log(`FATAL ERROR!: ${err}`);
 });
 
 app.use('/', express.static(__dirname + '/public'));
 
 const server_port = process.env.PORT || 4000;
-app.listen(server_port, function () {
+app.listen(server_port, () => {
   console.log(`cena-bot-web running on ${server_port}`);
   bot.loginWithToken(
     process.env.DISCORD_CLIENT_SECRET
   );
 });
 
-var PlayFileInChannel = function(filepath, v = 1.0) {
-  if(!voiceChannel)
-  {
+const PlayFileInChannel = (filepath, v = 1.0) => {
+  if(!voiceChannel) {
     console.log("Error! voiceChannel is null.");
     return;
   }
+
   console.log(filepath);
-  bot.joinVoiceChannel(voiceChannel, function(err, voiceConnection) {
+  bot.joinVoiceChannel(voiceChannel, (err, voiceConnection) => {
     if(err) console.log(`Errors: ${err}`);
     console.log(`Joined channel ${voiceConnection.server.name}`);
-    voiceConnection.playFile(filepath, { volume: v}, function (error, streamIntent) {
-      streamIntent.on('error', function (error) {
+    voiceConnection.playFile(filepath, { volume: v}, (error, streamIntent) => {
+      streamIntent.on('error', (error) => {
         console.log(`error: ${error}`);
       });
 
-      streamIntent.on('end', function () {
+      streamIntent.on('end', () => {
         bot.leaveVoiceChannel(voiceChannel);
       });
     });
   });
 }
 
-var uploadThemeSong = function(msg)
-{
-  if(msg.content.toUpperCase() != 'THEME SONG' ||
-     !msg.attachments)
-     return;
-  var url = msg.attachments[0].url;
-  var ext = url.substring(url.lastIndexOf('.') + 1);
-  if(!['mp3', 'wav', 'ogg'].includes(ext.toLowerCase()))
-  {
+const uploadThemeSong = (msg) => {
+  if(msg.content.toUpperCase() != 'THEME SONG' || !msg.attachments) return;
+
+  let url = msg.attachments[0].url;
+  let ext = url.substring(url.lastIndexOf('.') + 1);
+
+  if(!['mp3', 'wav', 'ogg'].includes(ext.toLowerCase())) {
      bot.reply(msg, `I can't play ${ext} files, bro!`);
      return;
   }
   console.log(`Theme song request from ${msg.author.username} for ${msg.attachments[0].url}`);
 
-  https.get(msg.attachments[0].url, function(data) {
-     var fileToSave = `${TSPath}${msg.author.id}.${ext}`;
-     var file = fs.createWriteStream(fileToSave);
-     data.pipe(file);
-   file.on('finish', function() {
-     file.close();
-     bot.reply(msg, 'Damn, that\'s a fine theme song!');
-     PlayFileInChannel(fileToSave);
-   });
+  https.get(msg.attachments[0].url, (data) => {
+    let fileToSave = `${THEME_SONGS_PATH}${msg.author.id}.${ext}`;
+    let file = fs.createWriteStream(fileToSave);
+    data.pipe(file);
+
+    file.on('finish', () => {
+      file.close();
+      bot.reply(msg, 'Damn, that\'s a fine theme song!');
+      PlayFileInChannel(fileToSave);
+    });
   });
 }
 
-var resetThemeSong = function(userId)
-{
-  fs.readdirSync(TSPath).forEach(function(filename){
+const resetThemeSong = (userId) => {
+  fs.readdirSync(THEME_SONGS_PATH).forEach((filename) => {
     if(filename.includes(userId))
-     fs.unlinkSync(TSPath+filename);
+      fs.unlinkSync(THEME_SONGS_PATH+filename);
   });
 }
 
-Array.prototype.intersects = function(arr)
-{
-  return this.filter(function(n) {
+Array.prototype.intersects = function(arr) {
+  return this.filter((n) => {
     return arr.indexOf(n) > -1;
   });
 }
 
-Array.prototype.containsAll = function(arr)
-{
+Array.prototype.containsAll = function(arr) {
   return this.intersects(arr).length == arr.length;
 }

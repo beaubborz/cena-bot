@@ -1,12 +1,10 @@
 {
-  "name": "Discord-WWE",
+  "name": "cena-bot",
   "version": "0.0.1",
-  "description": "Discord WWE theme song login bot",
+  "description": "the best bot in the world.",
   "keywords": [
-    "OpenShift",
-    "Node.js",
     "discord",
-    "openshift"
+    "john cena"
   ],
   "author": {
     "name": "beaubbe"
