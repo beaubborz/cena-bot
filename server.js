@@ -1,6 +1,6 @@
 var Discord = require('discord.js');
 var bot = new Discord.Client();
-var media = "media/john_cena.ogg";
+var media = "media/hello.ogg";
 var mediaBye = "media/bye.mp3";
 
 bot.on("ready", function() {
@@ -19,11 +19,11 @@ bot.on("voiceJoin", function(vch, User){
     console.log("Joined channel" + voiceConnection.server.name);
     voiceConnection.playFile(media, { volume: 0.1 }, function (error, streamIntent) {
       streamIntent.on("error", function (error) {
-      console.log("error " + error);
+        console.log("error " + error);
       });
 
       streamIntent.on("end", function () {
-      bot.leaveVoiceChannel(vch);
+        bot.leaveVoiceChannel(vch);
       });
     });
   });
