@@ -10,7 +10,7 @@ bot.on("ready", function() {
 
 bot.on("voiceJoin", function(vch, User){
   if(vch == null) return;
-  if(User.username != bot.user.username) return;
+  if(User.username == bot.user.username) return;
 
   console.log(User.username + ' joined!!');
 
@@ -32,7 +32,7 @@ bot.on("voiceJoin", function(vch, User){
 
 bot.on("voiceLeave", function(vch, User){
   if(vch == null) return;
-  if(User.username != bot.user.username) return;
+  if(User.username == bot.user.username) return;
 
   console.log(User.username + ' joined!!');
 
