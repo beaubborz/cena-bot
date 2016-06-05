@@ -1,11 +1,21 @@
 var Discord = require('discord.js');
+var https = require('https');
+var fs = require('fs');
 var bot = new Discord.Client();
+var TSPath = './theme_songs/';
 var media = "media/hello.ogg";
 var mediaBye = "media/bye.mp3";
+
+var voiceChannel;
 
 bot.on("ready", function() {
   console.log("Logged in as: " + bot.user.username + " - (" + bot.user.id + ")");
 	bot.setPlayingGame("WWE SMACKDOWN RAW 2016");
+
+  voiceChannel = bot.channels.find(function(ch){
+    return ch.type == 'voice' && ch.name == "General";
+  });
+  console.log("Found voice channel: "+voiceChannel.name);
 });
 
 bot.on("voiceJoin", function(vch, User){
@@ -13,20 +23,13 @@ bot.on("voiceJoin", function(vch, User){
   if(User.username == bot.user.username) return;
 
   console.log(User.username + ' joined!!');
-
-  bot.joinVoiceChannel(vch, function(err, voiceConnection){
-    console.log("Errors: " + err);
-    console.log("Joined channel" + voiceConnection.server.name);
-    voiceConnection.playFile(media, { volume: 0.1 }, function (error, streamIntent) {
-      streamIntent.on("error", function (error) {
-        console.log("error " + error);
-      });
-
-      streamIntent.on("end", function () {
-        bot.leaveVoiceChannel(vch);
-      });
-    });
+  var user_theme_song = fs.readdirSync(TSPath).find(function(filename){
+    filename.indexOf(User.id);
   });
+  if(user_theme_song)
+    PlayFileInChannel(user_theme_song);
+  else
+    PlayFileInChannel(media, 0.2);
 });
 
 
@@ -35,20 +38,34 @@ bot.on("voiceLeave", function(vch, User){
   if(User.username == bot.user.username) return;
 
   console.log(User.username + ' joined!!');
+  PlayFileInChannel(mediaBye);
+  
+});
 
-  bot.joinVoiceChannel(vch, function(err, voiceConnection){
-    console.log("Errors: " + err);
-    console.log("Joined channel" + voiceConnection.server.name);
-    voiceConnection.playFile(mediaBye, { volume: 1 }, function (error, streamIntent) {
-      streamIntent.on("error", function (error) {
-        console.log("error " + error);
-      });
 
-      streamIntent.on("end", function () {
-        bot.leaveVoiceChannel(vch);
-      });
+bot.on("message", function(msg) {
+   if(msg.content.toUpperCase() != "THEME SONG" ||
+      msg.attachments == undefined)
+      return;
+   var url = msg.attachments[0].url;
+   var ext = url.substring(url.lastIndexOf('.') + 1);
+   if(!['mp3', 'wav', 'ogg'].includes(ext.toLowerCase()))
+   {
+      bot.reply(msg, "I can't play " + ext + " files, bro!");
+      return;
+   }
+   console.log("Theme song request from "+ msg.author.username +" for "+msg.attachments[0].url);
+   
+   https.get(msg.attachments[0].url, function(data) {
+      var fileToSave = TSPath + msg.author.id + '.' + ext;
+      var file = fs.createWriteStream(fileToSave);
+      data.pipe(file);
+    file.on('finish', function() {
+      file.close();
+      bot.reply(msg, "Damn, that's a fine theme song!");
+      PlayFileInChannel(fileToSave);
     });
-  });
+   });
 });
 
 bot.on("error", function(err){
@@ -66,3 +83,26 @@ process.on("SIGINT", function () {
 bot.loginWithToken(
   process.env.DISCORD_CLIENT_SECRET
 );
+
+
+var PlayFileInChannel = function(filepath, v) {
+  if(!voiceChannel)
+  {
+    console.log("Error! voiceChannel is null.");
+    return;
+  }
+  console.log(filepath);
+  bot.joinVoiceChannel(voiceChannel, function(err, voiceConnection) {
+    console.log("Errors: " + err);
+    console.log("Joined channel" + voiceConnection.server.name);
+    voiceConnection.playFile(filepath, { volume: (v ? v:1) }, function (error, streamIntent) {
+      streamIntent.on("error", function (error) {
+        console.log("error " + error);
+      });
+
+      streamIntent.on("end", function () {
+        bot.leaveVoiceChannel(voiceChannel);
+      });
+    });
+  });
+}
