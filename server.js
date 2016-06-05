@@ -55,16 +55,16 @@ bot.on('message', function(msg) {
   }
 
   // Process commands.
-  console.log(msg.content.substring(0, johnTrigger.length));
-  var args = msg.content.toLowerCase().split(' ');
-  if(args[0] == johnTrigger)
+  var trigger = msg.content.toLowerCase().substring(0, johnTrigger.length);
+  var args = msg.content.toLowerCase().substring(johnTrigger.length + 1).split(/[\s,\\.!]+/g);
+  console.log(args);
+  if(trigger == johnTrigger)
   {
-    console.log(args);
-      console.log(args.intersects(['reset', 'theme', 'song']));
       if(args.containsAll(['reset', 'song']))
       {
         resetThemeSong(msg.author.id);
         bot.reply(msg, `Damn straight! My theme song is way better!`);
+        PlayFileInChannel(media, v = 0.2);
       }
       else
         bot.reply(msg, "WHAT??!");
