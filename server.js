@@ -2,7 +2,6 @@ var Discord = require('discord.js');
 var bot = new Discord.Client();
 var media = "media/john_cena.ogg";
 var mediaBye = "media/bye.mp3";
-var credentials = require('./credentials.json');
 
 bot.on("ready", function() {
     console.log("Logged in as: " + bot.user.username + " - (" + bot.user.id + ")");
@@ -10,13 +9,11 @@ bot.on("ready", function() {
 });
 
 bot.on("voiceJoin", function(vch, User){
-   if(vch == null || 
-      User.username == bot.user.username ||  
-      User.username == "AIRHORN SOLUTIONS")
-      return;
-      
+  if(vch == null) return;
+  if(User.username != bot.user.username) return;
+
    console.log(User.username + ' joined!!');
-   
+
    bot.joinVoiceChannel(vch, function(err, voiceConnection){
       console.log("Errors: " + err);
       console.log("Joined channel" + voiceConnection.server.name);
@@ -34,13 +31,11 @@ bot.on("voiceJoin", function(vch, User){
 
 
 bot.on("voiceLeave", function(vch, User){
-   if(vch == null || 
-      User.username == "JOHN CENA" ||  
-      User.username == "AIRHORN SOLUTIONS")
-      return;
-      
+  if(vch == null) return;
+  if(User.username != bot.user.username) return;
+
    console.log(User.username + ' joined!!');
-   
+
    bot.joinVoiceChannel(vch, function(err, voiceConnection){
       console.log("Errors: " + err);
       console.log("Joined channel" + voiceConnection.server.name);
@@ -64,10 +59,11 @@ bot.on("error", function(err){
 process.on("SIGINT", function () {
   //graceful shutdown
   bot.logout(function(err){
-	console.log('Logging out...' + err);
-	process.exit();
+  	console.log('Logging out...' + err);
+  	process.exit();
   });
-  
 });
 
-bot.login(credentials.email, credentials.password);
+bot.loginWithToken(
+  process.env.DISCORD_CLIENT_SECRET
+);
