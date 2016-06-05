@@ -15,7 +15,8 @@
     "node": ">= 6.2.1"
   },
   "dependencies": {
-    "discord.js": "^7.0.1"
+    "discord.js": "^7.0.1",
+    "express": "^4.13.4"
   },
   "devDependencies": {},
   "bundleDependencies": [],

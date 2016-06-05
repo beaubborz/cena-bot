@@ -1,6 +1,8 @@
 var Discord = require('discord.js');
 var https = require('https');
 var fs = require('fs');
+var express = require('express');
+var app = express();
 var bot = new Discord.Client();
 var TSPath = './theme_songs/';
 var media = "media/hello.ogg";
@@ -72,18 +74,15 @@ bot.on("error", function(err){
 	console.log("FATAL ERROR!: " + err);
 });
 
-process.on("SIGINT", function () {
-  //graceful shutdown
-  bot.logout(function(err){
-  	console.log('Logging out...' + err);
-  	process.exit();
-  });
+app.use('/', express.static(__dirname + '/public'));
+
+const server_port = process.env.PORT || 4000;
+app.listen(server_port, function () {
+  console.log(`cena-bot-web running on ${server_port}`);
+  bot.loginWithToken(
+    process.env.DISCORD_CLIENT_SECRET
+  );
 });
-
-bot.loginWithToken(
-  process.env.DISCORD_CLIENT_SECRET
-);
-
 
 var PlayFileInChannel = function(filepath, v) {
   if(!voiceChannel)
