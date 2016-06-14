@@ -7,7 +7,7 @@ const app = express();
 const bot = new Discord.Client();
 
 
-const THEME_SONGS_PATH = path.join(__dirname, '/theme_songs');
+const THEME_SONGS_PATH = path.join(__dirname, '/theme_songs/');
 const MEDIA = 'media/hello.ogg';
 const MEDIA_BYE = 'media/bye.mp3';
 const JOHN_KEYWORD = 'john!';
