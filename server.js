@@ -1,31 +1,31 @@
 const https = require('https');
-const fs = require('fs');
 const path = require('path');
 const Discord = require('discord.js');
 const express = require('express');
+const aws = require('aws-sdk');
 const app = express();
 const bot = new Discord.Client();
 
-
-const THEME_SONGS_PATH = path.join(__dirname, '/theme_songs/');
-const MEDIA = 'media/hello.ogg';
-const MEDIA_BYE = 'media/bye.mp3';
+const DEFAULT_HELLO = 'media/hello.ogg';
+const DEFAULT_BYE = 'media/bye.mp3';
 const JOHN_KEYWORD = 'john!';
 
 let voiceChannel;
+let bucket = new aws.S3({params: {Bucket: 'cena-bot'}});
 
-const playFileInChannel = (filepath, v = 1.0) => {
+const playFileInChannel = (key, v = 1.0) => {
   if (!voiceChannel) {
     console.log('Error! voiceChannel is null.');
     return;
   }
-  console.log(filepath);
+  console.log(key);
   bot.joinVoiceChannel(voiceChannel, (err, voiceConnection) => {
     if (err) {
       console.log(`Errors: ${err}`);
     }
     console.log(`Joined channel ${voiceConnection.server.name}`);
-    voiceConnection.playFile(filepath, {volume: v}, (error, streamIntent) => {
+    let url = bucket.getSignedUrl('getObject', {Key: key});
+    voiceConnection.playFile(url, {volume: v}, (error, streamIntent) => {
       streamIntent.on('error', (error) => {
         console.log(`error: ${error}`);
       });
@@ -38,9 +38,11 @@ const playFileInChannel = (filepath, v = 1.0) => {
 };
 
 const resetThemeSong = (userId) => {
-  fs.readdirSync(THEME_SONGS_PATH).forEach((filename) => {
-    if (filename.includes(userId)) {
-      fs.unlinkSync(THEME_SONGS_PATH + filename);
+  let key = `songs/${userId}`;
+  console.log(`reseting song with key=${key}`);
+  bucket.deleteObject({Key: key}, (err) => {
+    if (err) {
+      console.log(err, err.code);
     }
   });
 };
@@ -58,16 +60,14 @@ const uploadThemeSong = (msg) => {
     return;
   }
   console.log(`Theme song request from ${msg.author.username} for ${msg.attachments[0].url}`);
-  resetThemeSong(msg.author.id);
-  https.get(msg.attachments[0].url, (data) => {
-    let fileToSave = `${THEME_SONGS_PATH}${msg.author.id}.${ext}`;
-    let file = fs.createWriteStream(fileToSave);
-    data.pipe(file);
 
-    file.on('finish', () => {
-      file.close();
+  https.get(msg.attachments[0].url, (data) => {
+    let key = `songs/${msg.author.id}`;
+
+    bucket.upload({Body: data, Key: key}, () => {
       bot.reply(msg, 'Damn, that\'s a fine theme song!');
-      playFileInChannel(fileToSave);
+
+      playFileInChannel(key, 0.2);
     });
   });
 };
@@ -102,15 +102,15 @@ bot.on('voiceJoin', (vch, User) => {
 
   console.log(`${User.username} joined!!`);
 
-  let userThemeSong = fs.readdirSync(THEME_SONGS_PATH).find((filename) => {
-    return filename.includes(User.id);
+  let key = `songs/${User.id}`;
+  bucket.headObject({Key: key}, (err) => {
+    if (err) {
+      console.log(`theme song not found for key=${key}`);
+      playFileInChannel(DEFAULT_HELLO, 0.2);
+    } else {
+      playFileInChannel(key, 0.2);
+    }
   });
-
-  if (userThemeSong) {
-    playFileInChannel(`${THEME_SONGS_PATH}${userThemeSong}`);
-  } else {
-    playFileInChannel(MEDIA, 0.2);
-  }
 });
 
 bot.on('voiceLeave', (vch, User) => {
@@ -122,7 +122,7 @@ bot.on('voiceLeave', (vch, User) => {
   }
 
   console.log(`${User.username} joined!!`);
-  playFileInChannel(MEDIA_BYE);
+  playFileInChannel(DEFAULT_BYE, 0.2);
 });
 
 bot.on('message', (msg) => {
@@ -138,7 +138,7 @@ bot.on('message', (msg) => {
     if (args.containsAll(['reset', 'song'])) {
       resetThemeSong(msg.author.id);
       bot.reply(msg, `Damn straight! My theme song is way better!`);
-      playFileInChannel(MEDIA, 0.2);
+      playFileInChannel(DEFAULT_HELLO, 0.2);
     } else {
       bot.reply(msg, 'WHAT??!');
     }
