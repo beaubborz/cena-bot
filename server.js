@@ -18,13 +18,15 @@ const playFileInChannel = (key, v = 1.0) => {
     console.log('Error! voiceChannel is null.');
     return;
   }
-  console.log(key);
+
+  console.log(`playing song with key=${key}`);
   bot.joinVoiceChannel(voiceChannel, (err, voiceConnection) => {
     if (err) {
       console.log(`Errors: ${err}`);
     }
     console.log(`Joined channel ${voiceConnection.server.name}`);
     let url = bucket.getSignedUrl('getObject', {Key: key});
+    console.log(`  url=${url}`);
     voiceConnection.playFile(url, {volume: v}, (error, streamIntent) => {
       streamIntent.on('error', (error) => {
         console.log(`error: ${error}`);
