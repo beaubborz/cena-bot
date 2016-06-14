@@ -64,9 +64,13 @@ const uploadThemeSong = (msg) => {
   https.get(msg.attachments[0].url, (data) => {
     let key = `songs/${msg.author.id}`;
 
-    bucket.upload({Body: data, Key: key}, () => {
-      bot.reply(msg, 'Damn, that\'s a fine theme song!');
+    bucket.upload({Body: data, Key: key}, (err) => {
+      if (err) {
+        console.log(err, err.code);
+        return;
+      }
 
+      bot.reply(msg, 'Damn, that\'s a fine theme song!');
       playFileInChannel(key, 0.2);
     });
   });
