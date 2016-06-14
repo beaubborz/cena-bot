@@ -28,6 +28,11 @@ const playFileInChannel = (key, v = 1.0) => {
     let url = bucket.getSignedUrl('getObject', {Key: key});
     console.log(`  url=${url}`);
     voiceConnection.playFile(url, {volume: v}, (error, streamIntent) => {
+      if (error) {
+        console.log(error, error.code);
+        return;
+      }
+
       streamIntent.on('error', (error) => {
         console.log(`error: ${error}`);
       });
