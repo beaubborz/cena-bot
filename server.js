@@ -1,5 +1,6 @@
 const https = require('https');
 const path = require('path');
+const request = require('request');
 const Discord = require('discord.js');
 const express = require('express');
 const aws = require('aws-sdk');
@@ -27,7 +28,7 @@ const playFileInChannel = (key, v = 1.0) => {
     console.log(`Joined channel ${voiceConnection.server.name}`);
     let url = bucket.getSignedUrl('getObject', {Key: key});
     console.log(`  url=${url}`);
-    voiceConnection.playFile(url, {volume: v}, (error, streamIntent) => {
+    voiceConnection.playRawStream(request(url), {volume: v}, (error, streamIntent) => {
       if (error) {
         console.log(error, error.code);
         return;
