@@ -124,7 +124,7 @@ bot.on('voiceLeave', (vch, User) => {
   if (User.username === bot.user.username) {
     return;
   }
-  if (vch.playing) {
+  if (bot.voiceConnection.playing) {
     console.log(`action=bail reason="bot is already playing something."`)
     return;
   }
