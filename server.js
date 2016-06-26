@@ -16,18 +16,16 @@ let bucket = new aws.S3({params: {Bucket: 'cena-bot'}});
 
 const playFileInChannel = (key, v = 0.5) => {
   if (!voiceChannel) {
-    console.log('Error! voiceChannel is null.');
+    console.log(`error="voiceChannel is null"`);
     return;
   }
 
-  console.log(`playing song with key=${key}`);
   bot.joinVoiceChannel(voiceChannel, (err, voiceConnection) => {
     if (err) {
-      console.log(`Errors: ${err}`);
+      console.log(`error="${err}"`);
     }
-    console.log(`Joined channel ${voiceConnection.server.name}`);
     let url = bucket.getSignedUrl('getObject', {Key: key});
-    console.log(`  url=${url}`);
+    console.log(`action=play_song channel="${voiceConnection.server.name}" key="${key} url="${url}"`);
     voiceConnection.playRawStream(request(url), {volume: v}, (error, streamIntent) => {
       if (error) {
         console.log(error, error.code);
@@ -35,7 +33,7 @@ const playFileInChannel = (key, v = 0.5) => {
       }
 
       streamIntent.on('error', (error) => {
-        console.log(`error: ${error}`);
+        console.log(`error=${error}`);
       });
 
       streamIntent.on('end', () => {
@@ -47,10 +45,11 @@ const playFileInChannel = (key, v = 0.5) => {
 
 const resetThemeSong = (userId) => {
   let key = `songs/${userId}`;
-  console.log(`reseting song with key=${key}`);
+  console.log(`action=reset_song key=${key}`);
   bucket.deleteObject({Key: key}, (err) => {
     if (err) {
-      console.log(err, err.code);
+      console.log(`error=${err}`);
+      return;
     }
   });
 };
@@ -67,8 +66,8 @@ const uploadThemeSong = (msg) => {
     bot.reply(msg, `I can't play ${ext} files, bro!`);
     return;
   }
-  console.log(`Theme song request from ${msg.author.username} for ${msg.attachments[0].url}`);
 
+  console.log(`action=upload_song user="${msg.author.username}" url="${msg.attachments[0].url}"`);
   https.get(msg.attachments[0].url, (data) => {
     let key = `songs/${msg.author.id}`;
 
@@ -78,7 +77,7 @@ const uploadThemeSong = (msg) => {
         return;
       }
 
-      bot.reply(msg, 'Damn, that\'s a fine theme song!');
+      bot.reply(msg, `Damn, that's a fine theme song!`);
       playFileInChannel(key);
     });
   });
@@ -95,13 +94,13 @@ Array.prototype.containsAll = function (arr) {
 };
 
 bot.on('ready', () => {
-  console.log(`Logged in as: ${bot.user.username} - (${bot.user.id})`);
-  bot.setPlayingGame('WWE SMACKDOWN RAW 2016');
+  console.log(`action=login user=${bot.user.username}#${bot.user.id}`);
+  bot.setPlayingGame(`WWE SMACKDOWN RAW 2016`);
 
   voiceChannel = bot.channels.find((ch) => {
     return ch.type === 'voice' && ch.name === 'General';
   });
-  console.log(`Found voice channel: ${voiceChannel.name}`);
+  console.log(`action=voice_channel name=${voiceChannel.name}`);
 });
 
 bot.on('voiceJoin', (vch, User) => {
@@ -112,12 +111,12 @@ bot.on('voiceJoin', (vch, User) => {
     return;
   }
 
-  console.log(`${User.username} joined!!`);
+  console.log(`action=join_channel user=${User.username}`);
 
   let key = `songs/${User.id}`;
   bucket.headObject({Key: key}, (err) => {
+    console.log(`action=fetch_song key=${key} exists=${!!err}`);
     if (err) {
-      console.log(`theme song not found for key=${key}`);
       playFileInChannel(DEFAULT_HELLO);
     } else {
       playFileInChannel(key);
@@ -133,7 +132,7 @@ bot.on('voiceLeave', (vch, User) => {
     return;
   }
 
-  console.log(`${User.username} joined!!`);
+  console.log(`action=leave_channel user=${User.username}`);
   playFileInChannel(DEFAULT_BYE);
 });
 
@@ -158,7 +157,7 @@ bot.on('message', (msg) => {
 });
 
 bot.on('error', (err) => {
-  console.log(`FATAL ERROR!: ${err}`);
+  console.log(`fatal_error=${err}`);
 });
 
 app.use('/', express.static(path.join(__dirname, '/public')));
