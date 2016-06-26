@@ -87,7 +87,7 @@ bot.on('ready', () => {
 });
 
 bot.on('voiceJoin', (vch, user) => {
-  if (vch === null) {
+  if (!vch) {
     return;
   }
   if (user.username === bot.user.username) {
