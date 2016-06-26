@@ -1,17 +1,16 @@
-const https = require('https');
-const path = require('path');
+const https   = require('https');
+const path    = require('path');
 const request = require('request');
 const Discord = require('discord.js');
 const express = require('express');
-const aws = require('aws-sdk');
-const app = express();
-const bot = new Discord.Client();
+const app     = express();
+const aws     = require('aws-sdk');
+const bot     = new Discord.Client();
+const bucket  = new aws.S3({params: {Bucket: 'cena-bot'}});
 
 const DEFAULT_HELLO = 'media/hello.ogg';
-const DEFAULT_BYE = 'media/bye.mp3';
-const JOHN_KEYWORD = 'john!';
-
-const bucket = new aws.S3({params: {Bucket: 'cena-bot'}});
+const DEFAULT_BYE   = 'media/bye.mp3';
+const JOHN_KEYWORD  = 'john!';
 
 const playFileInChannel = (vch, key, v = 0.5) => {
   if (!vch) {
@@ -123,6 +122,10 @@ bot.on('voiceLeave', (vch, User) => {
     return;
   }
   if (User.username === bot.user.username) {
+    return;
+  }
+  if (vch.playing) {
+    console.log(`action=bail reason="bot is already playing something."`)
     return;
   }
 
