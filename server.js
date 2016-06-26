@@ -53,11 +53,6 @@ const resetThemeSong = (msg) => {
 };
 
 const uploadThemeSong = (msg) => {
-  if (!msg.attachments) {
-    console.log(`error="message has no attachments"`);
-    return;
-  }
-
   let url = msg.attachments[0].url;
   let ext = url.substring(url.lastIndexOf('.') + 1);
 
@@ -139,7 +134,7 @@ bot.on('voiceLeave', (vch, User) => {
 });
 
 bot.on('message', (msg) => {
-  if (msg.content.match(/(theme\ssong)|song|theme/gi)) {
+  if (msg.attachments.length > 0 && msg.content.match(/(theme\ssong)|song|theme/gi)) {
     uploadThemeSong(msg);
     bot.reply(msg, `Damn straight! My theme song is way better!`);
     return;
