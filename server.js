@@ -82,7 +82,7 @@ const uploadThemeSong = (msg) => {
   });
 };
 
-const hasTrigger = (mgs) => {
+const hasTrigger = (msg) => {
   msg.content.match(/john/gi);
 }
 
