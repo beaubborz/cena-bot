@@ -89,11 +89,11 @@ bot.on('voiceJoin', (vch, user) => {
   if (!vch) {
     return;
   }
-  if (user === bot.user) {
+  if (user.id === bot.user.id) {
     return;
   }
 
-  console.log(`action=join_channel user=${user.username}`);
+  console.log(`action=join_channel user=${user.username} user_id=${user.id}`);
 
   let key = `songs/${user.id}`;
   bucket.headObject({Key: key}, (err, data) => {
@@ -110,7 +110,7 @@ bot.on('voiceLeave', (vch, user) => {
   if (!vch) {
     return;
   }
-  if (user === bot.user) {
+  if (user.id === bot.user.id) {
     return;
   }
   hasVoiceConnection = (typeof bot.voiceConnection !== 'undefined');
@@ -124,7 +124,7 @@ bot.on('voiceLeave', (vch, user) => {
     return;
   }
 
-  console.log(`action=leave_channel user=${user.username}`);
+  console.log(`action=leave_channel user=${user.username} user_id=${user.id}`);
   playFileInChannel(vch, DEFAULT_BYE);
 });
 
