@@ -142,9 +142,14 @@ bot.on('message', (msg) => {
   if (msg.content.match(/(theme\ssong)|song|theme/gi)) {
     uploadThemeSong(msg);
     bot.reply(msg, `Damn straight! My theme song is way better!`);
+    return;
   }
 
-  if (hasTrigger(msg) && msg.content.match(/(?=.*reset)(?=.*song)/gi)) {
+  if (!hasTrigger(msg)) {
+    return;
+  }
+
+  if (msg.content.match(/(?=.*reset)(?=.*song)/gi)) {
     resetThemeSong(msg);
     bot.reply(msg, `Damn straight! My theme song is way better!`);
   } else {
