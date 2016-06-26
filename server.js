@@ -93,7 +93,7 @@ bot.on('voiceJoin', (vch, user) => {
   if (user.username === bot.user.username) {
     return;
   }
-  if (vch.users.has('id', bot.user.id)) {
+  if (vch.members.has('id', bot.user.id)) {
     return;
   }
 
