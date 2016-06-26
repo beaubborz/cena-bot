@@ -93,6 +93,9 @@ bot.on('voiceJoin', (vch, user) => {
   if (user.username === bot.user.username) {
     return;
   }
+  if (vch.users.has('id', bot.user.id)) {
+    return;
+  }
 
   console.log(`action=join_channel user=${user.username}`);
 
