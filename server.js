@@ -98,7 +98,7 @@ bot.on('voiceJoin', (vch, user) => {
 
   let key = `songs/${user.id}`;
   bucket.headObject({Key: key}, (err) => {
-    console.log(`action=fetch_song key=${key} exists=${!!err}`);
+    console.log(`action=fetch_song key=${key} exists=${err != null}`);
     if (err) {
       playFileInChannel(vch, DEFAULT_HELLO);
     } else {
