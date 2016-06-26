@@ -81,16 +81,6 @@ const hasTrigger = (msg) => {
   return msg.content.match(/john/gi);
 }
 
-Array.prototype.intersects = function (arr) {
-  return this.filter((n) => {
-    return arr.indexOf(n) > -1;
-  });
-};
-
-Array.prototype.containsAll = function (arr) {
-  return this.intersects(arr).length === arr.length;
-};
-
 bot.on('ready', () => {
   console.log(`action=login user=${bot.user.username}#${bot.user.id}`);
   bot.setPlayingGame(`WWE SMACKDOWN RAW 2016`);
