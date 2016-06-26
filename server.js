@@ -41,8 +41,8 @@ const playFileInChannel = (vch, key, v = 0.5) => {
   });
 };
 
-const resetThemeSong = (userId) => {
-  let key = `songs/${userId}`;
+const resetThemeSong = (msg) => {
+  let key = `songs/${msg.author.id}`;
   console.log(`action=reset_song key=${key}`);
   bucket.deleteObject({Key: key}, (err) => {
     if (err) {
