@@ -113,13 +113,14 @@ bot.on('voiceLeave', (vch, user) => {
   if (user === bot.user) {
     return;
   }
-  if (typeof bot.voiceConnection !== 'undefined' && bot.voiceConnection.playing) {
-    console.log(`action=bail reason="bot is already playing something. I should add it to a queue instead."`)
-    return;
-  }
-  if (typeof bot.voiceConnection !== 'undefined' && user.bot) {
+  hasVoiceConnection = (typeof bot.voiceConnection !== 'undefined');
+  if (hasVoiceConnection && user.bot) {
     bot.voiceConnection.stopPlaying();
     console.log(`action=bail reason="other bot left."`);
+    return;
+  }
+  if (hasVoiceConnection && bot.voiceConnection.playing) {
+    console.log(`action=bail reason="bot is already playing something. Finishing what's currently playing."`);
     return;
   }
 
