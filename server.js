@@ -141,6 +141,7 @@ bot.on('message', (msg) => {
   }
 
   if (!hasTrigger(msg)) {
+    console.log(`trigger not found...`);
     return;
   }
 
