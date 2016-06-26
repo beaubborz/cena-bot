@@ -124,7 +124,7 @@ bot.on('voiceLeave', (vch, User) => {
   if (User.username === bot.user.username) {
     return;
   }
-  if (bot.voiceConnection.playing) {
+  if (bot.voiceConnection && bot.voiceConnection.playing) {
     console.log(`action=bail reason="bot is already playing something."`)
     return;
   }
@@ -140,8 +140,18 @@ bot.on('message', (msg) => {
   }
 
   // Process commands.
+  // if (!msg.content.match(/john/gi)) {
+  //   return;
+  // }
+  //
+  // if (msg.content.match(/(?=.*reset)(?=.*song)/gi)) {
+  //
+  // } else if (msg.content.match(/(theme song)|song|theme/gi)) {
+  //
+  // }
   let trigger = msg.content.toLowerCase().substring(0, JOHN_KEYWORD.length);
   let args = msg.content.toLowerCase().substring(JOHN_KEYWORD.length + 1).split(/[\s,\\.!\\?]+/g);
+
   if (trigger === JOHN_KEYWORD) {
     if (args.containsAll(['reset', 'song'])) {
       resetThemeSong(msg.author.id);
