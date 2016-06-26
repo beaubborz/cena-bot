@@ -96,17 +96,17 @@ bot.on('ready', () => {
   bot.setPlayingGame(`WWE SMACKDOWN RAW 2016`);
 });
 
-bot.on('voiceJoin', (vch, User) => {
+bot.on('voiceJoin', (vch, user) => {
   if (vch === null) {
     return;
   }
-  if (User.username === bot.user.username) {
+  if (user.username === bot.user.username) {
     return;
   }
 
-  console.log(`action=join_channel user=${User.username}`);
+  console.log(`action=join_channel user=${user.username}`);
 
-  let key = `songs/${User.id}`;
+  let key = `songs/${user.id}`;
   bucket.headObject({Key: key}, (err) => {
     console.log(`action=fetch_song key=${key} exists=${!!err}`);
     if (err) {
@@ -117,11 +117,11 @@ bot.on('voiceJoin', (vch, User) => {
   });
 });
 
-bot.on('voiceLeave', (vch, User) => {
+bot.on('voiceLeave', (vch, user) => {
   if (!vch) {
     return;
   }
-  if (User.username === bot.user.username) {
+  if (user.username === bot.user.username) {
     return;
   }
   if (typeof bot.voiceConnection !== 'undefined' && bot.voiceConnection.playing) {
@@ -129,7 +129,7 @@ bot.on('voiceLeave', (vch, User) => {
     return;
   }
 
-  console.log(`action=leave_channel user=${User.username}`);
+  console.log(`action=leave_channel user=${user.username}`);
   playFileInChannel(vch, DEFAULT_BYE);
 });
 
@@ -141,7 +141,6 @@ bot.on('message', (msg) => {
   }
 
   if (!hasTrigger(msg)) {
-    console.log(`trigger not found...`);
     return;
   }
 
