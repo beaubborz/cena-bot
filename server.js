@@ -78,7 +78,7 @@ const uploadThemeSong = (msg) => {
 };
 
 const hasTrigger = (msg) => {
-  msg.content.match(/john/gi);
+  return msg.content.match(/john/gi);
 }
 
 Array.prototype.intersects = function (arr) {
