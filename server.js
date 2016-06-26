@@ -26,7 +26,7 @@ const playFileInChannel = (vch, key, v = 0.5) => {
     console.log(`action=play_song channel="${voiceConnection.server.name}" key="${key} url="${url}"`);
     voiceConnection.playRawStream(request(url), {volume: v}, (error, streamIntent) => {
       if (error) {
-        console.log(error, error.code);
+        console.log(`error=${error}`);
         return;
       }
 
