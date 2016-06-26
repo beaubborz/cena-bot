@@ -53,7 +53,8 @@ const resetThemeSong = (userId) => {
 };
 
 const uploadThemeSong = (msg) => {
-  if (msg.content.toUpperCase() !== 'THEME SONG' || !msg.attachments) {
+  if (!msg.attachments) {
+    console.log(`error="message has no attachments"`);
     return;
   }
 
@@ -71,15 +72,19 @@ const uploadThemeSong = (msg) => {
 
     bucket.upload({Body: data, Key: key}, (err) => {
       if (err) {
-        console.log(err, err.code);
+        console.log(`error=${err}`);
         return;
       }
 
       bot.reply(msg, `Damn, that's a fine theme song!`);
-      // playFileInChannel(key);
+      playFileInChannel(msg.author.voiceChannel, key);
     });
   });
 };
+
+const hasTrigger = (mgs) => {
+  msg.content.match(/john/gi);
+}
 
 Array.prototype.intersects = function (arr) {
   return this.filter((n) => {
@@ -124,8 +129,8 @@ bot.on('voiceLeave', (vch, User) => {
   if (User.username === bot.user.username) {
     return;
   }
-  if (bot.voiceConnection && bot.voiceConnection.playing) {
-    console.log(`action=bail reason="bot is already playing something."`)
+  if (typeof bot.voiceConnection !== 'undefined' && bot.voiceConnection.playing) {
+    console.log(`action=bail reason="bot is already playing something. I should add it to a queue instead."`)
     return;
   }
 
@@ -134,32 +139,16 @@ bot.on('voiceLeave', (vch, User) => {
 });
 
 bot.on('message', (msg) => {
-  if (msg.attachments.length) {
+  if (msg.content.match(/(theme\ssong)|song|theme/gi)) {
     uploadThemeSong(msg);
-    return;
+    bot.reply(msg, `Damn straight! My theme song is way better!`);
   }
 
-  // Process commands.
-  // if (!msg.content.match(/john/gi)) {
-  //   return;
-  // }
-  //
-  // if (msg.content.match(/(?=.*reset)(?=.*song)/gi)) {
-  //
-  // } else if (msg.content.match(/(theme song)|song|theme/gi)) {
-  //
-  // }
-  let trigger = msg.content.toLowerCase().substring(0, JOHN_KEYWORD.length);
-  let args = msg.content.toLowerCase().substring(JOHN_KEYWORD.length + 1).split(/[\s,\\.!\\?]+/g);
-
-  if (trigger === JOHN_KEYWORD) {
-    if (args.containsAll(['reset', 'song'])) {
-      resetThemeSong(msg.author.id);
-      bot.reply(msg, `Damn straight! My theme song is way better!`);
-      // playFileInChannel(DEFAULT_HELLO);
-    } else {
-      bot.reply(msg, 'WHAT??!');
-    }
+  if (hasTrigger(msg) && msg.content.match(/(?=.*reset)(?=.*song)/gi)) {
+    resetThemeSong(msg);
+    bot.reply(msg, `Damn straight! My theme song is way better!`);
+  } else {
+    bot.reply(msg, 'WHAT??!');
   }
 });
 
