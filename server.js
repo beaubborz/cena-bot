@@ -52,6 +52,15 @@ const resetThemeSong = (msg) => {
   });
 };
 
+const kickFromVoiceChannel = (msg) => {
+  let hasVoiceConnection = (typeof bot.voiceConnection !== 'undefined');
+  if(!hasVoiceConnection) {
+    return;
+  }
+
+  bot.leaveVoiceChannel(bot.voiceConnection.voiceChannel);
+}
+
 const uploadThemeSong = (msg) => {
   let url = msg.attachments[0].url;
   let ext = url.substring(url.lastIndexOf('.') + 1);
@@ -113,7 +122,7 @@ bot.on('voiceLeave', (vch, user) => {
   if (user.id === bot.user.id) {
     return;
   }
-  hasVoiceConnection = (typeof bot.voiceConnection !== 'undefined');
+  let hasVoiceConnection = (typeof bot.voiceConnection !== 'undefined');
   if (hasVoiceConnection && user.bot) {
     bot.voiceConnection.stopPlaying();
     console.log(`action=bail reason="other bot left."`);
@@ -142,7 +151,11 @@ bot.on('message', (msg) => {
   if (msg.content.match(/(?=.*reset)(?=.*song)/gi)) {
     resetThemeSong(msg);
     bot.reply(msg, `Damn straight! My theme song is way better!`);
-  } else {
+  } else if (msg.content.match(/(?=.*shut)(?=.*up)/gi)) {
+    kickFromVoiceChannel(msg);
+    bot.reply(msg, '...');
+  }
+  else {
     bot.reply(msg, 'WHAT??!');
   }
 });
