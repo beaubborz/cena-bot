@@ -71,7 +71,6 @@ const uploadThemeSong = (msg) => {
         return;
       }
 
-      bot.reply(msg, `Damn, that's a fine theme song!`);
       playFileInChannel(msg.author.voiceChannel, key);
     });
   });
@@ -90,10 +89,7 @@ bot.on('voiceJoin', (vch, user) => {
   if (!vch) {
     return;
   }
-  if (user.username === bot.user.username) {
-    return;
-  }
-  if (vch.members.has('id', bot.user.id)) {
+  if (user === bot.user) {
     return;
   }
 
@@ -129,7 +125,7 @@ bot.on('voiceLeave', (vch, user) => {
 bot.on('message', (msg) => {
   if (msg.attachments.length > 0 && msg.content.match(/(theme\ssong)|song|theme/gi)) {
     uploadThemeSong(msg);
-    bot.reply(msg, `Damn straight! My theme song is way better!`);
+    bot.reply(msg, `Damn, that's a fine theme song!`);
     return;
   }
 
