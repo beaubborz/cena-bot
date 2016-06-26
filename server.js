@@ -14,7 +14,7 @@ const JOHN_KEYWORD = 'john!';
 let voiceChannel;
 let bucket = new aws.S3({params: {Bucket: 'cena-bot'}});
 
-const playFileInChannel = (key, v = 1.0) => {
+const playFileInChannel = (key, v = 0.5) => {
   if (!voiceChannel) {
     console.log('Error! voiceChannel is null.');
     return;
@@ -79,7 +79,7 @@ const uploadThemeSong = (msg) => {
       }
 
       bot.reply(msg, 'Damn, that\'s a fine theme song!');
-      playFileInChannel(key, 0.2);
+      playFileInChannel(key);
     });
   });
 };
@@ -118,9 +118,9 @@ bot.on('voiceJoin', (vch, User) => {
   bucket.headObject({Key: key}, (err) => {
     if (err) {
       console.log(`theme song not found for key=${key}`);
-      playFileInChannel(DEFAULT_HELLO, 0.2);
+      playFileInChannel(DEFAULT_HELLO);
     } else {
-      playFileInChannel(key, 0.2);
+      playFileInChannel(key);
     }
   });
 });
@@ -134,7 +134,7 @@ bot.on('voiceLeave', (vch, User) => {
   }
 
   console.log(`${User.username} joined!!`);
-  playFileInChannel(DEFAULT_BYE, 0.2);
+  playFileInChannel(DEFAULT_BYE);
 });
 
 bot.on('message', (msg) => {
@@ -150,7 +150,7 @@ bot.on('message', (msg) => {
     if (args.containsAll(['reset', 'song'])) {
       resetThemeSong(msg.author.id);
       bot.reply(msg, `Damn straight! My theme song is way better!`);
-      playFileInChannel(DEFAULT_HELLO, 0.2);
+      playFileInChannel(DEFAULT_HELLO);
     } else {
       bot.reply(msg, 'WHAT??!');
     }
